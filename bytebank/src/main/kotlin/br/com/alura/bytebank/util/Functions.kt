@@ -2,6 +2,7 @@ package br.com.alura.bytebank.util
 
 import br.com.alura.bytebank.contract.Transferivel
 import br.com.alura.bytebank.entity.*
+import br.com.alura.bytebank.exceptions.SaldoInsuficienteException
 
 fun testConditions(saldo: Double) {
     when {
@@ -97,7 +98,14 @@ fun handleContas() {
     contaFranco.sacar(50.0)
     contaLaura.sacar(100.0)
 
-    contaFranco.transferir(50.0, contaLaura)
+    try {
+        contaFranco.transferir(50.0, contaLaura)
+    } catch (e: Exception) {
+        when (e) {
+            is SaldoInsuficienteException -> println(e)
+            else -> e.printStackTrace()
+        }
+    }
 
     println("Titular da conta 1: ${contaFranco.titular}")
     println("Número da conta 1: ${contaFranco.numero}")
@@ -130,6 +138,13 @@ fun handleEnderecoAny() {
     println(endereco == novoEndereco)
     println(endereco.hashCode())
     println(endereco.toString())
+
+    val isCancelling = when(title) {
+        "Deseja cancelar a operação?" -> true
+        else -> false
+    }
+
+    if (isCancelling) return
 }
 
 fun getDialogContent(): Pair<String, String> {

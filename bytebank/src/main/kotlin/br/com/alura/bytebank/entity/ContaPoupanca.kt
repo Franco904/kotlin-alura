@@ -1,6 +1,7 @@
 package br.com.alura.bytebank.entity
 
 import br.com.alura.bytebank.contract.Transferivel
+import br.com.alura.bytebank.exceptions.SaldoInsuficienteException
 
 class ContaPoupanca(
     titular: String,
@@ -13,9 +14,9 @@ class ContaPoupanca(
     }
 
     override fun transferir(valor: Double, destino: Conta) {
-        if (saldo >= valor) {
-            saldo -= valor
-            destino.depositar(valor)
-        }
+        if (saldo < valor) throw SaldoInsuficienteException()
+
+        saldo -= valor
+        destino.depositar(valor)
     }
 }
