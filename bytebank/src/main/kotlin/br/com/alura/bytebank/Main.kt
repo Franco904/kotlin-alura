@@ -7,5 +7,11 @@ fun main() {
 //    handleContas()
 //    handleEnderecoAny()
 
-    createCollections()
+//    createCollections()
+//    testCollectionsCopy()
+
+//    handleSets()
+//    handleMaps()
+
+    handleFunctions()
 }

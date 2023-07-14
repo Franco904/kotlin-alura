@@ -1,155 +1,241 @@
 package br.com.alura.bytebank.util
 
-import br.com.alura.bytebank.contract.Transferivel
-import br.com.alura.bytebank.entity.*
-import br.com.alura.bytebank.exceptions.SaldoInsuficienteException
+import kotlin.random.Random
 
-fun testConditions(saldo: Double) {
-    when {
-        saldo > 0.0 -> println("Conta é positiva!")
-        saldo == 0.0 -> println("Conta é neutra.")
-        else -> println("Conta é negativa.")
-    }
+fun handleFunctions() {
+    functionsAndLambdas()
+    hof()
+    scopeFunctions()
+    receiver()
 }
 
-fun iterateLoop() {
-    outer_for@ for (i in 6 downTo 1) {
-        for (j in 1..4) {
-            if (j == 3) {
-                break@outer_for
-            }
-            println("Vez de $j !")
+fun functionsAndLambdas() {
+    // Function type variables
+    val functionExample: () -> Unit = ::noReturnFun
+    println(functionExample)
+    functionExample()
+
+    val sumFunction: (Int, Int) -> Int = ::sumNumbers
+    println(sumFunction(5, 7))
+
+    // Function type class
+    val invoker1 = Invoker()
+    invoker1()
+
+    val invoker2 = Invoker()
+    invoker2(10)
+
+    val sum = Sum()
+    sum(4, 5)
+
+    // Anonymous functions
+    val anon: () -> Unit = fun() {
+        println("Dentro da função anônima 1")
+    }
+    anon()
+
+    // Lambdas
+    val lambda1: () -> Unit = {
+        println("Dentro da lambda 1")
+    }
+    lambda1()
+
+    // Single param lambda
+    val lambda2: (param: Int) -> Int = lambda@{
+        if (it > 100) {
+            // Label return
+            return@lambda it + 50
         }
-        println("Conta $i criada!")
+
+        it + 100
     }
+    println(lambda2(200))
+    println(lambda2(2))
 
-    var i = 0
-    var atualiza = 10
-
-    while (i < 5) {
-        atualiza += i
-        i++
+    // Two params lambda
+    val lambda3: (Int, Int) -> Unit = { firstParam: Int, secondParam: Int ->
+        println("Sum: ${firstParam + secondParam}")
     }
+    lambda3(49, 3)
 
-    println(atualiza)
+    // Empty lambda
+    val lambda4: () -> Unit = {}
+    lambda4()
 }
 
-fun handleFuncionarios() {
-    val colaborador = Colaborador(
-        nome = "Franco",
-        cpf = "128.331.589-04",
-        salario = 1000.0,
-    )
+fun hof() {
+    // Let
+//    getStringOrNull(bool = false)?.let {
+//        println("String não é nula")
+//    } ?: println("String é nula")
 
-//    println("Nome do colaborador: ${colaborador.nome}")
-//    println("CPF do colaborador: ${colaborador.cpf}")
-//    println("Salário do colaborador: ${colaborador.salario}")
-//    println("Bonificação do salário do colaborador: ${colaborador.bonificacao}")
-//
-//    println("\n============================\n")
-
-    val diretor = Diretor(
-        nome = "Mendonça",
-        cpf = "111.111.111-11",
-        salario = 7000.0,
-        senha = 123123,
-        plr = 250.0,
-    )
-
-    val analista = Analista(
-        nome = "Maria",
-        cpf = "111.222.333-44",
-        salario = 4500.0,
-        senha = 123123,
-    )
-
-//    println("Nome do diretor: ${diretor.nome}")
-//    println("CPF do diretor: ${diretor.cpf}")
-//    println("Salário do diretor: ${diretor.salario}")
-//    println("PLR do diretor: ${diretor.plr}")
-//    println("Bonificação do salário do diretor: ${diretor.bonificacao}")
-//
-//    println("\n============================\n")
-
-    CalculadoraBonificacao().apply {
-        registrar(colaborador)
-        registrar(diretor)
-        registrar(analista)
-        println("Bonificação total: $total")
+    // Higher-Order (função que recebe outra dentro dela, pode ser construtor de classe tb)
+    higherOrderFunctionInlined(1) {
+        println("HOF")
     }
 
-
+    // Crossinline: Proibe retornos da função externa, restringindo-os para a função lambda
+    val result = crossinlined(1) {
+        // Error: 'return' is not allowed here
+        // return true
+        true
+    }
+    println(result)
 }
 
-fun handleContas() {
-    val contaFranco = ContaPoupanca(
-        titular = "Franco",
-        numero = 1000,
-    )
+fun scopeFunctions() {
+    // Funções de escopo temporário sobre algum objeto Kotlin (aumenta a concisão e legibilidade do código)
+    // Objetos de contexto (receiver): referência "this" ou "it" dependendo da função
+    //
+    // https://kotlinlang.org/docs/scope-functions.html
 
-    val contaLaura = Conta(
-        titular = "Laura",
-        numero = 1001,
-    )
+    // let (verificação de nulidade e inicialização de variável sem acessar seus membros)
+    val texto: String? = getStringOrNull(bool = false)
+    texto?.let {
+        println("String não é nula")
+    } ?: println("String é nula")
 
-    contaFranco.depositar(500.0)
-    contaLaura.depositar(500.0)
+    val number = 15
+    val sum = number.let {
+        val innerSum = it + 20
 
-    contaFranco.sacar(50.0)
-    contaLaura.sacar(100.0)
+        // retorna o resultado da lambda
+        it + innerSum
+    }
+    println(sum)
 
-    try {
-        contaFranco.transferir(50.0, contaLaura)
-    } catch (e: Exception) {
-        when (e) {
-            is SaldoInsuficienteException -> println(e)
-            else -> e.printStackTrace()
-        }
+    // also (ação adicional sobre alguma ação desempenhada por um método) -> "Também faça..."
+    Endereco().also {
+        it.mergeRuaBairro()
+        // retorna o objeto de contexto
+    }.also {
+        println(it)
+        // retorna o objeto de contexto
     }
 
-    println("Titular da conta 1: ${contaFranco.titular}")
-    println("Número da conta 1: ${contaFranco.numero}")
-    println("Saldo da conta 1: ${contaFranco.saldo}")
+    // apply (configuração das propriedades do objeto) -> "Aplique as seguintes atribuições ao objeto"
+    Endereco().apply {
+        numero = 112
+        rua = "Avenida Rio Branco"
+        bairro = "Agronômica"
 
-    println("Titular da conta 2: ${contaLaura.titular}")
-    println("Número da conta 2: ${contaLaura.numero}")
-    println("Saldo da conta 2: ${contaLaura.saldo}")
-
-    testConditions(contaFranco.saldo)
-    iterateLoop()
-
-    Testes.testaSingleton()
-
-    val ob: Transferivel = object : Transferivel {
-        override fun transferir(valor: Double, destino: Conta) {
-            TODO("Not yet implemented")
-        }
+        // retorna o objeto de contexto
     }
 
-    println("Total de contas: ${Conta.totalContas}")
+    // run
+    // extension: configuração do objeto para obter algum resultado computado, e inicialização de variável acessando seus membros
+    val endereco = Endereco(numero = 300)
+    val numberPlus100PlusNumber = endereco.run {
+        val numberUpdated = getNumberPlus100()
+
+        // retorna o resultado da lambda
+        numberUpdated + numero
+    }
+    println(numberPlus100PlusNumber)
+
+    // non-extension: Rodar uma expressão e atribuir o resultado da computação à uma variável (uma função pontual)
+    val hexNumberRegex = run {
+        val digits = "0-9"
+        val hexDigits = "A-Fa-f"
+        val sign = "+-"
+
+        // retorna o resultado da lambda
+        Regex("[$sign]?[$digits$hexDigits]+")
+    }
+
+    for (match in hexNumberRegex.findAll("+123 -FFFF !%*& 88 XYZ")) {
+        println(match.value)
+    }
+
+    // with (agrupar chamadas de métodos do objeto) -> "com esse objeto, faça..."
+    val ruaMerged = with(endereco) {
+        // retorna o resultado da lambda
+        mergeRuaBairro()
+    }
+    println(ruaMerged)
+
+    // Guia
+    // Chama um ou mais membros do objeto de contexto -> Utilize o objeto de contexto receiver.
+    // Não chama membros do objeto do contexto -> Utilize o objeto de contexto como argumento.
+    // Não faz a configuração do objeto, inicializações ou chamadas de membros -> Utilize ou let(),
+    // para verificação de nulidade, e also(), para demais casos.
+
+    // Outras funções de escopo secundárias
+    // takeIf e takeUnless
+
+    val randomNumber = Random.nextInt(100)
+
+    val parOuNull = randomNumber.takeIf { it % 2 == 0 }
+    val imparOuNull = randomNumber.takeIf { it % 2 == 0 }
 }
 
-fun handleEnderecoAny() {
-    val endereco = Endereco(cep = "88034530")
-    val novoEndereco = Endereco(cep = "88034530")
-
-    val (title, message) = getDialogContent()
-
-    println(endereco == novoEndereco)
-    println(endereco.hashCode())
-    println(endereco.toString())
-
-    val isCancelling = when(title) {
-        "Deseja cancelar a operação?" -> true
-        else -> false
+fun receiver() {
+    val sumNumbersPlus80 = receiverFun(56, 4) {
+        this + 80
+    }.also {
+        println(it)
     }
-
-    if (isCancelling) return
 }
 
-fun getDialogContent(): Pair<String, String> {
-    val dialogTitle = "Deseja cancelar a operação?"
-    val dialogMessage = "Seus dados não serão perdidos."
+fun receiverFun(a: Int, b: Int, receiverCallback: Int.() -> Int): Int {
+    val sum = a + b
+    return sum.receiverCallback()
+}
 
-    return dialogTitle to dialogMessage
+fun noReturnFun() {
+    println("hello world!")
+}
+
+fun sumNumbers(a: Int, b: Int): Int = a + b
+
+class Invoker : () -> Unit {
+    operator fun invoke(a: Int) {
+        println(a + 10)
+    }
+
+    override fun invoke() {
+        println("From custom function class")
+    }
+}
+
+class Sum : (Int, Int) -> Unit {
+    override fun invoke(a: Int, b: Int): Unit {
+        println("Sum(): ${a + b}")
+    }
+}
+
+fun getStringOrNull(bool: Boolean): String? {
+    return if (bool) "String" else null
+}
+
+// Higher-Order Function
+// Sobre inline functions (otimização de performance): https://kotlinlang.org/docs/inline-functions.html
+// https://stackoverflow.com/questions/44471284/when-to-use-an-inline-function-in-kotlin
+inline fun higherOrderFunctionInlined(first: Int, function: () -> Unit) {
+    if (first == 1) {
+        function()
+    }
+}
+
+inline fun crossinlined(first: Int, crossinline function: () -> Boolean): Boolean {
+    return if (first == 1) {
+        function()
+    } else {
+        false
+    }
+}
+
+data class Endereco(
+    var numero: Int = 142,
+    var rua: String = "Rua Itabira",
+    var bairro: String = "Coqueiros",
+) {
+    fun getNumberPlus100(): Int {
+        return numero + 100
+    }
+
+    fun mergeRuaBairro(): String {
+        rua = "$rua, $bairro"
+        return rua
+    }
 }
