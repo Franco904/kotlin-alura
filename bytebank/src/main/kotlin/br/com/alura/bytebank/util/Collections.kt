@@ -189,3 +189,129 @@ fun createBooksLists() {
 fun MutableList<Livro?>.withMarkers(): String {
     return filterNotNull().joinToString(separator = "\n") { " - ${it.titulo} de ${it.autor}" }
 }
+
+fun testCollectionsCopy() {
+    val controller = NamesController()
+    controller.addName("Franco")
+
+    controller.addName("Remover")
+    controller.removeName("Remover")
+
+    val a = controller.names
+}
+
+class NamesController {
+    val names: Collection<String> get() = _names.toList()
+
+    fun addName(name: String) {
+        _names.add(name)
+    }
+
+    fun removeName(name: String) {
+        _names.remove(name)
+    }
+
+    companion object {
+        private val _names = mutableListOf<String>()
+    }
+}
+
+fun handleSets() {
+    val assisteAndroid = setOf("Franco", "Augusto", "Mamá", "Mamá")
+    val assisteKotlin = setOf("Henrique", "Pedro", "Franco")
+
+    val assisteAoMenosUm = assisteAndroid union assisteKotlin
+    val assisteAmbos = assisteAndroid intersect assisteKotlin
+
+    val assisteSoKotlin = assisteKotlin subtract assisteAndroid
+    val assisteSoAndroid = assisteAndroid subtract assisteKotlin
+
+    println(assisteAoMenosUm)
+    println(assisteAmbos)
+
+    println(assisteSoKotlin)
+    println(assisteSoAndroid)
+}
+
+fun handleMaps() {
+    val mapExample1 = mapOf(Pair("Número 1", 7), Pair("Número 2", 2), Pair("Número 3", 16))
+    val mapExample2 = mutableMapOf("1" to 1, "2" to 12, "3" to 41)
+
+    println(mapExample1)
+    println(mapExample2)
+
+    println(mapExample1["Número 1"]) // 7
+    println(mapExample1["1"]) // null
+    println(mapExample2["1"]) // 1
+
+    for (entry in mapExample1) {
+        println("Key: ${entry.key}, Value: ${entry.value}")
+    }
+
+    mapExample2["4"] = 70
+    mapExample2.putIfAbsent("4", 6)
+    mapExample2.remove("2")
+
+    for (entry in mapExample2) {
+        println("Key: ${entry.key}, Value: ${entry.value}")
+    }
+
+    val valueDefault = mapExample2.getOrDefault("16", 50)
+    val valueElse = mapExample2.getOrElse("16") { 25 }
+
+    println(valueDefault)
+    println(valueElse)
+
+    val keys = mapExample2.keys
+    val values = mapExample2.values
+
+    println(keys)
+    println(values)
+
+    val evenValues = mapExample2.filterValues { it % 2 == 0 }
+    println(evenValues)
+
+    println(mapExample2 + Pair("45", 67))
+    println(mapExample2 - "3")
+
+    mapExample2 += setOf("9" to 55, "18" to 92) // putAll
+    mapExample2.values.remove(1)
+    println(mapExample2)
+
+    val pedidos = listOf(
+        Pedido(1, "Pedido 1", 15.0),
+        Pedido(2, "Pedido 2", 17.5),
+        Pedido(3, "Pedido 3", 99.9),
+        Pedido(4, "Pedido 4", 1.99),
+    )
+
+    val pedidosMap = pedidos.associate { (it.numero to (it.valor > 50)) }
+    println(pedidosMap)
+
+    val pedidosByNumero = pedidos.associateBy { it.numero }
+    println(pedidosByNumero)
+
+    val pedidosWithValorCondition = pedidos.associateWith { it.valor > 50 }
+    println(pedidosWithValorCondition)
+
+    val enumMap: Map<PessoaEnum, Int?> = PessoaEnum.values().associateWith { null }
+    println(enumMap)
+
+    val pedidosGroupedValorCondition = pedidos.groupBy { it.valor > 50 }
+    println(pedidosGroupedValorCondition)
+
+    val pedidosGrouping = pedidos.groupingBy { it.valor > 50 }
+    println(pedidosGrouping.eachCount())
+}
+
+data class Pedido(
+    val numero: Int,
+    val nome: String,
+    val valor: Double,
+)
+
+enum class PessoaEnum {
+    PESSOA,
+    INDIVIDUO,
+    CIDADAO,
+}
